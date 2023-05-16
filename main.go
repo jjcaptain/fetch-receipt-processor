@@ -6,10 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Entry point of the program. Maps the endpoints and starts the web server.
 func main() {
 	router := gin.Default()
 
-	// https://go.dev/doc/tutorial/web-service-gin
 	receipts := router.Group("/receipts")
 	{
 		receipts.POST("/process", handlers.ProcessReceipt)
