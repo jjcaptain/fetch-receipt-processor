@@ -1,7 +1,7 @@
 package main
 
 import (
-	"net/http"
+	"jjcaptain/receipt-processor/handlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,11 +9,12 @@ import (
 func main() {
 	router := gin.Default()
 
-	router.GET("/hello", hello)
+	// https://go.dev/doc/tutorial/web-service-gin
+	receipts := router.Group("/receipts")
+	{
+		receipts.POST("/process", handlers.ProcessReceipt)
+		receipts.GET("/:id/points", handlers.GetPointsForReceipt)	
+	}
 
 	router.Run("localhost:8080")
-}
-
-func hello(context *gin.Context) {
-	context.JSON(http.StatusOK, "Hello World")
 }
