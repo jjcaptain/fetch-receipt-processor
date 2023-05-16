@@ -1,11 +1,12 @@
 package handlers
 
 import (
+	"jjcaptain/receipt-processor/data"
 	"jjcaptain/receipt-processor/types"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type receiptId struct {
@@ -26,11 +27,23 @@ func ProcessReceipt(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, receiptId{strconv.Itoa(len(newReceipt.Items))})
+	id := uuid.New().String()
+
+	data.UpdateReceiptScore(id, 42)
+
+	context.JSON(http.StatusOK, receiptId{id})
 }
 
 // Return the point value for the receipt with the given ID.
 func GetPointsForReceipt(context *gin.Context) {
+	id := context.Param("id")
 
-	context.JSON(http.StatusOK, receiptPoints{42})
+	points, present := data.GetScoreForReceiptId(id)
+
+	if !present {
+		context.String(http.StatusNotFound, "No record found for receipt %s", id)
+		return
+	}
+
+	context.JSON(http.StatusOK, receiptPoints{points})
 }
