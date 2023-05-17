@@ -30,6 +30,12 @@ func ProcessReceipt(context *gin.Context) {
 		return
 	}
 
+	// Make sure the receipt actually has items on it
+	if len(receipt.Items) == 0 {
+		context.String(http.StatusBadRequest, "Receipt must contain at least one item.")
+		return
+	}
+
 	score, err := calculateScore(scorers, receipt)
 	if err != nil {
 		context.Error(err)
