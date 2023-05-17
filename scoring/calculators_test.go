@@ -9,7 +9,7 @@ func TestScoreRetailer_SimpleCase(t *testing.T) {
 	input := types.Receipt{Retailer: "Target"}
 	expected := 6
 
-	score := ScoreRetailer(input)
+	score, _ := ScoreRetailer(input)
 
 	if score != expected {
 		t.Errorf("Score %d did not match expected %d", score, expected)
@@ -20,7 +20,7 @@ func TestScoreRetailer_WithSymbols(t *testing.T) {
 	input := types.Receipt{Retailer: "M&M Corner Market"}
 	expected := 14
 
-	score := ScoreRetailer(input)
+	score, _ := ScoreRetailer(input)
 
 	if score != expected {
 		t.Errorf("Score %d did not match expected %d", score, expected)

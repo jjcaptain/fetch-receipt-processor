@@ -10,11 +10,11 @@ import (
 )
 
 // Calculate points for the retailer
-func ScoreRetailer(receipt types.Receipt) int {
+func ScoreRetailer(receipt types.Receipt) (int, error) {
 	// Award one point per alphanumeric character
 	nonAlphanumericRegex := regexp.MustCompile(`[^a-zA-Z0-9]+`)
 	filteredRetailerName := nonAlphanumericRegex.ReplaceAllString(receipt.Retailer, "")
-	return len(filteredRetailerName)
+	return len(filteredRetailerName), nil
 }
 
 // Calculate points for the receipt total
@@ -53,8 +53,15 @@ func ScoreItems(receipt types.Receipt) (int, error) {
 	errs := make(chan error, 1)
 
 	// calculate the score for each item
-	for i := 0; i < numItems; i++ {
-		go scoreItem(receipt.Items[i], ch, errs)
+	for i := range receipt.Items {
+		go func (item types.ReceiptItem)  {
+			subScore, err := scoreItem(item)
+			if err != nil {
+				errs <- err
+			} else {
+				ch <- subScore
+			}
+		}(receipt.Items[i])
 	}
 
 	// add up the results
@@ -73,7 +80,7 @@ func ScoreItems(receipt types.Receipt) (int, error) {
 }
 
 // Calculate points for a single item on the receipt
-func scoreItem(item types.ReceiptItem, ch chan int, errs chan error) {
+func scoreItem(item types.ReceiptItem) (int, error) {
 	score := 0
 
 	// If the trimmed length of the item description is a multiple of 3
@@ -81,14 +88,14 @@ func scoreItem(item types.ReceiptItem, ch chan int, errs chan error) {
 	if len(trimmedDescription) % 3 == 0 {
 		price, err := strconv.ParseFloat(item.Price, 32)
 		if err != nil {
-			errs <- err
+			return 0, err
 		}
 
 		// multiply the price by 0.2 and round up to the nearest integer
 		score = int(math.Ceil(price * 0.2))
 	}
 
-	ch <- score
+	return score, nil
 }
 
 // Calculate points for the receipt date
